@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CONTROL DE STOCK</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='datatables.min.css') }}">
+
+    <!-- Carga de jQuery desde tu carpeta "static" -->
+    <script src="{{ url_for('static', filename='code.jquery.com_jquery-3.7.0.min.js') }}"></script>
+
+    <!-- Carga de Bootstrap desde tu carpeta "static" -->
+    <script src="{{ url_for('static', filename='bootstrap.bundle.min.js') }}"></script>
+
+    <!-- Carga de DataTables -->
+    <script src="{{ url_for('static', filename='datatables.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        /* Agregar estilos personalizados aquí */
+        /* Por ejemplo, puedes ajustar el ancho de los campos de entrada */
+        .table-responsive input[type="date"],
+        .table-responsive input[type="text"],
+        .table-responsive input[type="number"] {
+            width: 100%;
+        }
+    </style>
+    <script>
+$(document).ready(function() {
+    let rowCount = 0;
+
+    $("#agregarFila").click(function() {
+        rowCount++;
+
+        let newRow = `<tr>
+            <td><input type="date" name="fecha${rowCount}" required></td>
+            <td><input type="text" name="legajo${rowCount}" required></td>
+            <td><input type="text" name="id_producto${rowCount}" class="idProductoInput" required></td>
+            <td><input type="text" name="nombre_producto${rowCount}" class="nombreProductoInput" required></td>
+            <td><input type="number" name="cantidad${rowCount}" step="any" required></td>
+            <td><button type="button" class="borrarFila">Borrar</button></td>
+        </tr>`;
+
+        $("#tablaControl").append(newRow);
+
+        $(".borrarFila").click(function() {
+            $(this).closest("tr").remove();
+        });
+
+        $(".idProductoInput").on('blur', function() {
+            let id_producto = $(this).val();
+            let nombreProductoInput = $(this).closest("tr").find(".nombreProductoInput");
+
+            // Realizar una llamada AJAX para obtener el nombre del producto
+            $.ajax({
+                url: `/buscar_nombre_producto?id_producto=${id_producto}`,
+                method: 'GET',
+                success: function(data) {
+                    nombreProductoInput.val(data.nombre_producto);
+                },
+                error: function() {
+                    nombreProductoInput.val('No encontrado');
+                }
+            });
+        });
+
+        let today = new Date();
+        let maxDate = today.toISOString().split('T')[0];
+        let minDate = new Date();
+        minDate.setDate(today.getDate() - 7);
+        let minDateString = minDate.toISOString().split('T')[0];
+
+        $("input[name='fecha" + rowCount + "']").attr("max", maxDate);
+        $("input[name='fecha" + rowCount + "']").attr("min", minDateString);
+    });
+
+    $("#formularioControl").submit(function(event) {
+        event.preventDefault();
+
+        // Obtén los valores de las filas y realiza la llamada AJAX para ingresar los datos
+        $("table#tablaControl tbody tr").each(function() {
+            let fecha = $(this).find("input[name^='fecha']").val();
+            let legajo = $(this).find("input[name^='legajo']").val();
+            let id_producto = $(this).find("input[name^='id_producto']").val();
+            let cantidad = $(this).find("input[name^='cantidad']").val();
+            let nombre_producto = $(this).find("input[name^='nombre_producto']").val();
+
+            if (fecha && legajo && id_producto && cantidad) {
+                $.ajax({
+                    url: "/ingresar_control",
+                    method: "POST",
+                    data: {
+                        fecha: fecha,
+                        legajo: legajo,
+                        id_producto: id_producto,
+                        cantidad: cantidad
+                    },
+                    success: function(response) {
+                        console.log("Datos insertados correctamente.");
+                        $("#mensajeExito").text("Datos insertados correctamente.");
+
+                        // Actualizar la tabla de datos guardados
+                        let newRow = `
+                            <tr>
+                                <td>${fecha}</td>
+                                <td>${legajo}</td>
+                                <td>${id_producto}</td>
+                                <td>${nombre_producto}</td>
+                                <td>${cantidad}</td>
+                            </tr>`;
+                        $("#tablaDatosGuardados tbody").append(newRow);
+
+                        // Limpiar los campos del formulario
+                        $("table#tablaControl input[type='text']").val('');
+                        $("table#tablaControl input[type='number']").val('');
+                    },
+                    error: function() {
+                        console.log("Error al insertar los datos.");
+                        $("#mensajeError").text("Error al insertar los datos.");
+                    }
+                });
+            }
+        });
+    });
+});
+</script>
+
+</head>
+<body>
+    <!-- Agrega aquí el código que proporcionaste -->
+<div class="wrapper">
+        <!-- Sidebar  -->
+        <nav id="sidebar">
+            <div class="sidebar-header">
+                <a href="{{ url_for('index') }}"><h3>ESPACIOS VERDES</h3></a>
+            </div>
+
+            <ul class="list-unstyled components">
+                <p>INVENTARIO</p>
+                <li><a href="{{ url_for('ingresar_salida') }}">Salida sin NS</a>
+                </li>
+                <li>
+                    <a href="{{ url_for('ingresar_salida_ns') }}">Salida con NS</a>
+                </li>
+                <li>
+                    <a href="{{ url_for('ingresar_entrada') }}">Entrada sin NS</a>
+                </li>
+                <li>
+                    <a href="{{ url_for('ingresar_entrada_ns') }}">Entrada con NS</a>
+                </li>
+                <li>
+                    <a href="{{ url_for('control_stock') }}">Control stock</a>
+                </li>
+                <li>
+                <a href="{{ url_for('necesidades_compras') }}">Cargar necesidades de Compra</a>
+            </li>
+            </ul>
+
+            <ul class="list-unstyled CTAs">
+                <li>
+                    <a href="#" class="download">Más Información</a>
+                </li>
+                <li>
+                    <a href="#" class="article">Contacto</a>
+                </li>
+            </ul>
+        </nav>
+
+                    <!-- Page Content  -->
+    <div id="content">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container-fluid">
+                <button type="button" id="sidebarCollapse1" class="btn btn-primary btn-custom">
+                    <a href="{{ url_for('ver_stock') }}">
+                        <i class="fas fa-align-left"></i>
+                        <span>STOCK</span>
+                    </a>
+                </button>
+                <button type="button" id="sidebarCollapse2" class="btn btn-primary btn-custom">
+                    <a href="{{ url_for('ver_salidas') }}">
+                        <i class="fas fa-align-left"></i>
+                        <span>SALIDAS</span>
+                    </a>
+                </button>
+                <button type="button" id="sidebarCollapse3" class="btn btn-primary btn-custom">
+                    <a href="{{ url_for('ver_entradas') }}">
+                        <i class="fas fa-align-left"></i>
+                        <span>ENTRADAS</span>
+                    </a>
+                </button>
+
+                <button type="button" id="sidebarCollapse4" class="btn btn-primary btn-custom">
+                    <a href="{{ url_for('agregar_producto') }}">
+                        <i class="fas fa-align-left"></i>
+                        <span>PRODUCTOS</span>
+                    </a>
+                </button>
+                <button type="button" id="sidebarCollapse5" class="btn btn-primary btn-custom">
+                    <a href="{{ url_for('ver_numseries') }}">
+                        <i class="fas fa-align-left"></i>
+                        <span>NÚMEROS DE SERIE</span>
+                    </a>
+                </button>
+                <button type="button" id="sidebarCollapse7" class="btn btn-primary btn-custom">
+                    <a href="{{ url_for('ver_controles') }}">
+                        <i class="fas fa-align-left"></i>
+                        <span>CONTROLES</span>
+                    </a>
+                </button>
+                <button type="button" id="sidebarCollapse6" class="btn btn-primary btn-custom">
+                    <a href="#">
+                        <i class="fas fa-align-left"></i>
+                        <span>PERSONAL</span>
+                    </a>
+                </button>
+                <button type="button" id="sidebarCollapse8" class="btn btn-primary btn-custom">
+                    <a href="{{ url_for('presupuesto') }}">
+                        <i class="fas fa-align-left"></i>
+                        <span>PRESUPUESTO</span>
+                    </a>
+                </button>
+                <button type="button" id="sidebarCollapse9" class="btn btn-primary btn-custom">
+                    <a href="{{ url_for('ingreso_compras') }}">
+                        <i class="fas fa-align-left"></i>
+                        <span>COMPRAS</span>
+                    </a>
+                </button>
+            </div>
+        </nav>
+            <div id="content1">
+            <div class="table-responsive">
+                <h2>CONTROL DE STOCK</h2>
+                <form id="formularioControl" method="post" action="/ingresar_control">
+                    <table class="table" id="tablaControl">
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Legajo</th>
+                            <th>ID Producto</th>
+                            <th>Nombre Producto</th>
+                            <th>Cantidad</th>
+                            <th></th>
+                        </tr>
+                        <!-- ... Aquí van las filas generadas ... -->
+                    </table>
+                    <button type="button" id="agregarFila">Agregar Fila</button>
+                    <button type="submit">Guardar</button>
+                </form>
+            </div>
+                <!-- Nueva tabla para mostrar los datos recién guardados -->
+<div class="table-responsive">
+    <h2>Datos Recién Guardados</h2>
+    <table class="table" id="tablaDatosGuardados">
+        <tr>
+            <th>Fecha</th>
+            <th>Legajo</th>
+            <th>ID Producto</th>
+            <th>Nombre Producto</th>
+            <th>Cantidad</th>
+        </tr>
+    </table>
+</div>
+        </div>
+            </div></div>
+</body>
+</html>

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Agregar Productos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='datatables.min.css') }}">
+    <!-- Carga de jQuery desde tu carpeta "static" -->
+    <script src="{{ url_for('static', filename='code.jquery.com_jquery-3.7.0.min.js') }}"></script>
+    <!-- Carga de Bootstrap desde tu carpeta "static" -->
+    <script src="{{ url_for('static', filename='bootstrap.bundle.min.js') }}"></script>
+    <!-- Carga de DataTables -->
+    <script src="{{ url_for('static', filename='datatables.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+    /* Estilos personalizados */
+    .btn-custom {
+        margin-right: 10px; /* Ajusta el valor para cambiar el margen entre los botones */
+    }
+
+    /* Establece un ancho máximo para los campos de entrada */
+    input[type="text"] {
+        max-width: 150px; /* Ajusta el ancho según tus preferencias */
+    }
+</style>
+    <style>
+        /* Estilos personalizados */
+        .btn-custom {
+            margin-right: 10px; /* Ajusta el valor para cambiar el margen entre los botones */
+        }
+    </style>
+</head>
+<body>
+<!-- Agrega aquí el código que proporcionaste -->
+<div class="wrapper">
+    <!-- Sidebar  -->
+    <nav id="sidebar">
+        <div class="sidebar-header">
+            <a href="{{ url_for('index') }}"><h3>ESPACIOS VERDES</h3></a>
+        </div>
+
+        <ul class="list-unstyled components">
+            <p>INVENTARIO</p>
+            <li><a href="{{ url_for('ingresar_salida') }}">Salida sin NS</a>
+            </li>
+            <li>
+                <a href="{{ url_for('ingresar_salida_ns') }}">Salida con NS</a>
+            </li>
+            <li>
+                <a href="{{ url_for('ingresar_entrada') }}">Entrada sin NS</a>
+            </li>
+            <li>
+                <a href="{{ url_for('ingresar_entrada_ns') }}">Entrada con NS</a>
+            </li>
+            <li>
+                <a href="{{ url_for('control_stock') }}">Control stock</a>
+            </li>
+            <li>
+                <a href="{{ url_for('necesidades_compras') }}">Cargar necesidades de Compra</a>
+            </li>
+        </ul>
+
+        <ul class="list-unstyled CTAs">
+            <li>
+                <a href="#" class="download">Más Información</a>
+            </li>
+            <li>
+                <a href="#" class="article">Contacto</a>
+            </li>
+        </ul>
+    </nav>
+
+            <!-- Page Content  -->
+    <div id="content">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container-fluid">
+                <button type="button" id="sidebarCollapse1" class="btn btn-primary btn-custom">
+                    <a href="{{ url_for('ver_stock') }}">
+                        <i class="fas fa-align-left"></i>
+                        <span>STOCK</span>
+                    </a>
+                </button>
+                <button type="button" id="sidebarCollapse2" class="btn btn-primary btn-custom">
+                    <a href="{{ url_for('ver_salidas') }}">
+                        <i class="fas fa-align-left"></i>
+                        <span>SALIDAS</span>
+                    </a>
+                </button>
+                <button type="button" id="sidebarCollapse3" class="btn btn-primary btn-custom">
+                    <a href="{{ url_for('ver_entradas') }}">
+                        <i class="fas fa-align-left"></i>
+                        <span>ENTRADAS</span>
+                    </a>
+                </button>
+
+                <button type="button" id="sidebarCollapse4" class="btn btn-primary btn-custom">
+                    <a href="{{ url_for('agregar_producto') }}">
+                        <i class="fas fa-align-left"></i>
+                        <span>PRODUCTOS</span>
+                    </a>
+                </button>
+                <button type="button" id="sidebarCollapse5" class="btn btn-primary btn-custom">
+                    <a href="{{ url_for('ver_numseries') }}">
+                        <i class="fas fa-align-left"></i>
+                        <span>NÚMEROS DE SERIE</span>
+                    </a>
+                </button>
+                <button type="button" id="sidebarCollapse7" class="btn btn-primary btn-custom">
+                    <a href="{{ url_for('ver_controles') }}">
+                        <i class="fas fa-align-left"></i>
+                        <span>CONTROLES</span>
+                    </a>
+                </button>
+                <button type="button" id="sidebarCollapse6" class="btn btn-primary btn-custom">
+                    <a href="#">
+                        <i class="fas fa-align-left"></i>
+                        <span>PERSONAL</span>
+                    </a>
+                </button>
+                <button type="button" id="sidebarCollapse8" class="btn btn-primary btn-custom">
+                    <a href="{{ url_for('presupuesto') }}">
+                        <i class="fas fa-align-left"></i>
+                        <span>PRESUPUESTO</span>
+                    </a>
+                </button>
+                <button type="button" id="sidebarCollapse9" class="btn btn-primary btn-custom">
+                    <a href="{{ url_for('ingreso_compras') }}">
+                        <i class="fas fa-align-left"></i>
+                        <span>COMPRAS</span>
+                    </a>
+                </button>
+            </div>
+        </nav>
+        <div class="table-responsive">
+            <h1>AGREGAR PRODUCTO</h1>
+            <form method="post" action="/guardar_producto">
+                <table class="table">
+                    <tr>
+                        <th>Categoría</th>
+                        <th>Código Producto</th>
+                        <th>Nombre</th>
+                        <th>Especificaciones</th>
+                        <th>Unidad</th>
+                        <th>Importancia ABC</th>
+                        <th>Importancia 123</th>
+                        <th>Stock mínimo</th>
+                        <th></th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <select name="categoria" id="categoriaSelect">
+                                {% for categoria in categorias %}
+                                    <option value="{{ categoria }}">{{ categoria }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td><input type="text" id="codigoProducto" name="codigoProducto"></td>
+                        <td><input type="text" name="nombreProducto" required></td>
+                        <td><input type="text" name="especificacionProducto"></td>
+                        <td><input type="text" name="medidaProducto" required></td>
+                        <td><input type="text" name="importanciaABC"></td>
+                        <td><input type="text" name="importancia123"></td>
+                        <td><input type="text" name="stockMinimo"></td>
+                        <td><button type="submit">Guardar</button></td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+        <script>
+            // Función para generar el código de producto
+            function generarCodigoProducto(categoria) {
+                $.ajax({
+                    type: 'POST',
+                    url: '/generar_codigo_producto',
+                    data: {categoria: categoria},
+                    success: function(data) {
+                        $('#codigoProducto').val(data.codigo_producto);
+                    }
+                });
+            }
+
+            // Manejador de eventos cuando se selecciona una categoría
+            $('#categoriaSelect').change(function() {
+                var categoriaSeleccionada = $(this).val();
+                generarCodigoProducto(categoriaSeleccionada);
+            });
+        </script>
+    </div>
+</div>
+</body>
+</html>
